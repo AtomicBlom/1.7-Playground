@@ -13,6 +13,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 import org.lwjgl.util.vector.Vector2f;
+import javax.vecmath.Vector3d;
 
 public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
 {
@@ -68,7 +69,9 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
 
     private void renderSide(IBlockAccess world, int x, int y, int z, ForgeDirection side, IConnectedTextureBlock block, RenderBlocks renderer)
     {
-        if (side != ForgeDirection.SOUTH) return;
+        //if (side != ForgeDirection.SOUTH && side != ForgeDirection.WEST) return;
+        //if (side != ForgeDirection.EAST && side != ForgeDirection.NORTH) return;
+        if (side == ForgeDirection.UP || side == ForgeDirection.DOWN) return;
 
         Tessellator tessellator = Tessellator.instance;
 
@@ -85,12 +88,10 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         {
             coordinates = getSubTextureForBlock(world, x, y, z, block, quadrant);
 
-            tessellator.addVertexWithUV(x + quadrant.tuStart, y + quadrant.tvStart, z, coordinates.tuFrom, coordinates.tvFrom);
-            tessellator.addVertexWithUV(x + quadrant.tuStart, y + quadrant.tvEnd, z, coordinates.tuFrom, coordinates.tvTo);
-            tessellator.addVertexWithUV(x + quadrant.tuEnd, y + quadrant.tvEnd, z, coordinates.tuTo, coordinates.tvTo);
-            tessellator.addVertexWithUV(x + quadrant.tuEnd, y + quadrant.tvStart, z, coordinates.tuTo, coordinates.tvFrom);
-
-
+            tessellator.addVertexWithUV(x + quadrant.pointA.xCoord, y + quadrant.pointA.yCoord, z + quadrant.pointA.zCoord, coordinates.tuFrom, coordinates.tvFrom);
+            tessellator.addVertexWithUV(x + quadrant.pointB.xCoord, y + quadrant.pointB.yCoord, z + quadrant.pointB.zCoord, coordinates.tuFrom, coordinates.tvTo);
+            tessellator.addVertexWithUV(x + quadrant.pointC.xCoord, y + quadrant.pointC.yCoord, z + quadrant.pointC.zCoord, coordinates.tuTo, coordinates.tvTo);
+            tessellator.addVertexWithUV(x + quadrant.pointD.xCoord, y + quadrant.pointD.yCoord, z + quadrant.pointD.zCoord, coordinates.tuTo, coordinates.tvFrom);
         }
     }
 
@@ -101,10 +102,10 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         final boolean offsetVerticalTexture;
         final boolean offsetHorizontalTexture;
 
-        float tuStart = 0.0f;
-        float tuEnd = 0.5f;
-        float tvStart = 0.0f;
-        float tvEnd = 0.5f;
+        final Vec3 pointA;
+        final Vec3 pointB;
+        final Vec3 pointC;
+        final Vec3 pointD;
 
         public TextureQuadrant(TextureDirection horizontal, TextureDirection vertical, ForgeDirection side)
         {
@@ -115,6 +116,11 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
             offsetHorizontalTexture = horizontal == TextureDirection.LEFT;
             offsetVerticalTexture = vertical == TextureDirection.ABOVE;
 
+            float tuStart = -0.5f;
+            float tuEnd = 0.0f;
+            float tvStart = -0.5f;
+            float tvEnd = 0.0f;
+
             if (offsetHorizontalTexture) {
                 tuStart += 0.5;
                 tuEnd += 0.5;
@@ -123,6 +129,41 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
                 tvStart += 0.5;
                 tvEnd += 0.5;
             }
+
+            Vec3 pointA, pointB, pointC, pointD;
+
+            float angle = 0;
+
+            switch(side) {
+                case SOUTH:
+                    angle = 0;
+                    break;
+                case WEST:
+                    angle = (float)Math.toRadians(270);
+                    break;
+                case EAST:
+                    angle = (float)Math.toRadians(90);
+                    break;
+                case NORTH:
+                    angle = (float)Math.toRadians(180);
+                    break;
+            }
+
+            pointA = Vec3.createVectorHelper(tuStart, tvStart, -0.5);
+            pointB = Vec3.createVectorHelper(tuStart, tvEnd, -0.5);
+            pointC = Vec3.createVectorHelper(tuEnd, tvEnd, -0.5);
+            pointD = Vec3.createVectorHelper(tuEnd, tvStart, -0.5);
+
+            pointA.rotateAroundY(angle);
+            pointB.rotateAroundY(angle);
+            pointC.rotateAroundY(angle);
+            pointD.rotateAroundY(angle);
+
+
+            this.pointA = pointA.addVector(0.5, 0.5, 0.5);
+            this.pointB = pointB.addVector(0.5, 0.5, 0.5);
+            this.pointC = pointC.addVector(0.5, 0.5, 0.5);
+            this.pointD = pointD.addVector(0.5, 0.5, 0.5);
         }
     }
 
