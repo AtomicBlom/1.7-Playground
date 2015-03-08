@@ -85,8 +85,7 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         IConnectedTextureBlock ctBlock = (IConnectedTextureBlock)block;
 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            //world will be null when rendering inventory
-            if (world == null || block.shouldSideBeRendered(world, x, y, z, side.ordinal())) {
+            if (block.shouldSideBeRendered(world, x, y, z, side.ordinal())) {
                 renderSide(world, x, y, z, side, ctBlock);
             }
         }
@@ -120,16 +119,16 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
     private TextureCoordinates getSubTextureForBlock(IBlockAccess world, int x, int y, int z, IConnectedTextureBlock block, TextureQuadrant quadrant)
     {
         TextureCoordinates  coordinates = new TextureCoordinates();
-        int metadata = world != null ? world.getBlockMetadata(x, y, z) : 0;
-        boolean horizontalConnected = world != null && block == world.getBlock(
+        int metadata = world.getBlockMetadata(x, y, z);
+        boolean horizontalConnected = block == world.getBlock(
                 x + quadrant.horizontalDirection.offsetX,
                 y + quadrant.horizontalDirection.offsetY,
                 z + quadrant.horizontalDirection.offsetZ);
-        boolean verticalConnected = world != null &&block == world.getBlock(
+        boolean verticalConnected = block == world.getBlock(
                 x + quadrant.verticalDirection.offsetX,
                 y + quadrant.verticalDirection.offsetY,
                 z + quadrant.verticalDirection.offsetZ);
-        boolean cornerConnected = world != null &&block == world.getBlock(
+        boolean cornerConnected = block == world.getBlock(
                 x + quadrant.horizontalDirection.offsetX + quadrant.verticalDirection.offsetX,
                 y + quadrant.horizontalDirection.offsetY + quadrant.verticalDirection.offsetY,
                 z + quadrant.horizontalDirection.offsetZ + quadrant.verticalDirection.offsetZ);
