@@ -21,7 +21,7 @@ public class Playground
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
-        proxy.init();
+        proxy.preinit();
 
         ModBlocks.init();
         ModItems.init();
@@ -31,6 +31,6 @@ public class Playground
     @Mod.EventHandler
     public void init()
     {
-
+        proxy.init();
     }
 }
