@@ -137,8 +137,8 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
                 y + quadrant.horizontalDirection.offsetY + quadrant.verticalDirection.offsetY,
                 z + quadrant.horizontalDirection.offsetZ + quadrant.verticalDirection.offsetZ);
 
-        int uStart = 0;
-        int vStart = 0;
+        int uStart = quadrant.offsetHorizontalTexture ? 1 : 0;
+        int vStart = quadrant.offsetVerticalTexture ? 1 : 0;
         int subIconsPerIcon;
         IIcon icon;
 
@@ -167,22 +167,11 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
             }
         }
 
-        if (quadrant.offsetHorizontalTexture)
-        {
-            uStart |= 1;
-        }
-        if (quadrant.offsetVerticalTexture)
-        {
-            vStart |= 1;
-        }
-
         float minU = icon.getMinU();
         float minV = icon.getMinV();
-        float maxU = icon.getMaxU();
-        float maxV = icon.getMaxV();
 
-        final float textureSizeU = (maxU - minU);
-        final float textureSizeV = (maxV - minV);
+        final float textureSizeU = (icon.getMaxU() - minU);
+        final float textureSizeV = (icon.getMaxV() - minV);
         final float localTUFrom = (uStart / (float)subIconsPerIcon);
         final float localTVFrom = (vStart / (float)subIconsPerIcon);
         final float localTUTo = localTUFrom + (1.0f / subIconsPerIcon);
