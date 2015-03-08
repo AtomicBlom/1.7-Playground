@@ -15,9 +15,23 @@ import org.lwjgl.opengl.GL11;
 public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
 {
     private final int id;
+    private final TextureQuadrant[][] textureQuadrants;
 
     private ConnectedTextureISBRH() {
+
         this.id = RenderingRegistry.getNextAvailableRenderId();
+
+        textureQuadrants = new TextureQuadrant[ForgeDirection.VALID_DIRECTIONS.length][4];
+
+        for (final ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
+        {
+            textureQuadrants[direction.ordinal()] = new TextureQuadrant[] {
+                    new TextureQuadrant(TextureDirection.LEFT, TextureDirection.ABOVE, direction),
+                    new TextureQuadrant(TextureDirection.RIGHT, TextureDirection.ABOVE, direction),
+                    new TextureQuadrant(TextureDirection.LEFT, TextureDirection.BELOW, direction),
+                    new TextureQuadrant(TextureDirection.RIGHT, TextureDirection.BELOW, direction),
+            };
+        }
     }
 
     public static final ConnectedTextureISBRH INSTANCE = new ConnectedTextureISBRH();
@@ -93,22 +107,13 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         return true;
     }
 
+    private final TextureCoordinates coordinates = new TextureCoordinates();
     private void renderSide(IBlockAccess world, int x, int y, int z, ForgeDirection side, IConnectedTextureBlock block)
     {
         Tessellator tessellator = Tessellator.instance;
-
-        TextureQuadrant[] quadrants = {
-                new TextureQuadrant(TextureDirection.LEFT, TextureDirection.ABOVE, side),
-                new TextureQuadrant(TextureDirection.RIGHT, TextureDirection.ABOVE, side),
-                new TextureQuadrant(TextureDirection.LEFT, TextureDirection.BELOW, side),
-                new TextureQuadrant(TextureDirection.RIGHT, TextureDirection.BELOW, side),
-        };
-
-        TextureCoordinates coordinates;
-        for (final TextureQuadrant quadrant : quadrants)
+        for (final TextureQuadrant quadrant : textureQuadrants[side.ordinal()])
         {
-            coordinates = getSubTextureForBlock(world, x, y, z, block, quadrant);
-
+            setSubTextureForBlockToCoordinates(world, x, y, z, block, quadrant, coordinates);
             tessellator.addVertexWithUV(x + quadrant.pointA.xCoord, y + quadrant.pointA.yCoord, z + quadrant.pointA.zCoord, coordinates.tuFrom, coordinates.tvFrom);
             tessellator.addVertexWithUV(x + quadrant.pointB.xCoord, y + quadrant.pointB.yCoord, z + quadrant.pointB.zCoord, coordinates.tuFrom, coordinates.tvTo);
             tessellator.addVertexWithUV(x + quadrant.pointC.xCoord, y + quadrant.pointC.yCoord, z + quadrant.pointC.zCoord, coordinates.tuTo, coordinates.tvTo);
@@ -116,9 +121,8 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         }
     }
 
-    private TextureCoordinates getSubTextureForBlock(IBlockAccess world, int x, int y, int z, IConnectedTextureBlock block, TextureQuadrant quadrant)
+    private void setSubTextureForBlockToCoordinates(IBlockAccess world, int x, int y, int z, IConnectedTextureBlock block, TextureQuadrant quadrant, TextureCoordinates coordinates)
     {
-        TextureCoordinates  coordinates = new TextureCoordinates();
         int metadata = world.getBlockMetadata(x, y, z);
         boolean horizontalConnected = block == world.getBlock(
                 x + quadrant.horizontalDirection.offsetX,
@@ -188,8 +192,6 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         coordinates.tvFrom = minV + textureSizeV * localTVFrom;
         coordinates.tuTo = minU + textureSizeU * localTUTo;
         coordinates.tvTo = minV + textureSizeV * localTVTo;
-
-        return coordinates;
     }
 
     @Override
