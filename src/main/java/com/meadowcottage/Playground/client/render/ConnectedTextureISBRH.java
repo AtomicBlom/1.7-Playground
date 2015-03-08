@@ -15,12 +15,17 @@ import org.lwjgl.opengl.GL11;
 public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
 {
     private final int id;
-    private final TextureQuadrant[][] textureQuadrants;
+    private TextureQuadrant[][] textureQuadrants;
 
     private ConnectedTextureISBRH() {
 
         this.id = RenderingRegistry.getNextAvailableRenderId();
 
+        calculateTextureQuadrants();
+    }
+
+    private void calculateTextureQuadrants()
+    {
         textureQuadrants = new TextureQuadrant[ForgeDirection.VALID_DIRECTIONS.length][4];
 
         for (final ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
@@ -143,7 +148,7 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         IIcon icon;
 
         //Use the default texture, both borders
-        if (!horizontalConnected && !verticalConnected && !cornerConnected) {
+        if (!horizontalConnected && !verticalConnected) {
             icon = block.getIcon(quadrant.side.ordinal(), metadata);
             subIconsPerIcon = 2;
         } else

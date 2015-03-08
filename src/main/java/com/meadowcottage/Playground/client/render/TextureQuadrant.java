@@ -19,7 +19,7 @@ class TextureQuadrant
     final Vec3 pointD;
 
     private static final float xRotations[] = { (float)Math.toRadians(270), (float)Math.toRadians(90), 0, 0, 0, 0, 0 };
-    private static final float yRotations[] = { 0, 0, (float)Math.toRadians(180), 0, (float)Math.toRadians(270), (float)Math.toRadians(90), 0};
+    private static final float yRotations[] = { 0, (float)Math.toRadians(180), (float)Math.toRadians(180), 0, (float)Math.toRadians(270), (float)Math.toRadians(90), 0};
 
     public TextureQuadrant(TextureDirection horizontal, TextureDirection vertical, ForgeDirection side)
     {
@@ -54,15 +54,17 @@ class TextureQuadrant
         pointC = Vec3.createVectorHelper(tuEnd, tvEnd, -0.5);
         pointD = Vec3.createVectorHelper(tuEnd, tvStart, -0.5);
 
+        pointA.rotateAroundX(rotateX);
+        pointB.rotateAroundX(rotateX);
+        pointC.rotateAroundX(rotateX);
+        pointD.rotateAroundX(rotateX);
+
         pointA.rotateAroundY(rotateY);
         pointB.rotateAroundY(rotateY);
         pointC.rotateAroundY(rotateY);
         pointD.rotateAroundY(rotateY);
 
-        pointA.rotateAroundX(rotateX);
-        pointB.rotateAroundX(rotateX);
-        pointC.rotateAroundX(rotateX);
-        pointD.rotateAroundX(rotateX);
+
 
 
         this.pointA = pointA.addVector(0.5, 0.5, 0.5);
