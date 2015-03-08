@@ -7,12 +7,13 @@ import com.meadowcottage.Playground.common.proxy.CommonProxy;
 import com.meadowcottage.Playground.common.reference.Reference;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
 @Mod(modid = Reference.MODID, name = Reference.NAME, version = Reference.VERSION)
 public class Playground
 {
-    @SidedProxy(clientSide = Reference.ClientProxy, serverSide = Reference.ServerProxy)
+    @SidedProxy(clientSide = Reference.ClientProxy, serverSide = Reference.CommonProxy)
     public static CommonProxy proxy;
 
     @Mod.Instance(Reference.MODID)
@@ -29,7 +30,7 @@ public class Playground
     }
 
     @Mod.EventHandler
-    public void init()
+    public void init(FMLInitializationEvent event)
     {
         proxy.init();
     }

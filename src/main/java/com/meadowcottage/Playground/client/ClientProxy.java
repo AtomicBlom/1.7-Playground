@@ -1,6 +1,8 @@
 package com.meadowcottage.Playground.client;
 
+import com.meadowcottage.Playground.client.render.ConnectedTextureISBRH;
 import com.meadowcottage.Playground.common.proxy.CommonProxy;
+import cpw.mods.fml.client.registry.RenderingRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -11,10 +13,10 @@ public class ClientProxy extends CommonProxy
     {
 
     }
-
+    @Override
     public void init()
     {
-
+        RenderingRegistry.registerBlockHandler(ConnectedTextureISBRH.INSTANCE);
     }
 
     @Override
