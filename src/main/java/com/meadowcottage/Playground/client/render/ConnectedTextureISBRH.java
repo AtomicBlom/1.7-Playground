@@ -1,6 +1,5 @@
 package com.meadowcottage.Playground.client.render;
 
-import com.meadowcottage.Playground.common.util.textures.BlockSideRotation;
 import com.meadowcottage.Playground.common.util.textures.TextureDirection;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -9,11 +8,9 @@ import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
-import org.lwjgl.util.vector.Vector2f;
-import javax.vecmath.Vector3d;
+import org.lwjgl.opengl.GL11;
 
 public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
 {
@@ -28,7 +25,36 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
     @Override
     public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer)
     {
-
+        Tessellator tessellator = Tessellator.instance;
+        block.setBlockBoundsForItemRender();
+        renderer.setRenderBoundsFromBlock(block);
+        GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
+        GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(0.0F, -1.0F, 0.0F);
+        renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, metadata));
+        tessellator.draw();
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(0.0F, 1.0F, 0.0F);
+        renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, metadata));
+        tessellator.draw();
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(0.0F, 0.0F, -1.0F);
+        renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, metadata));
+        tessellator.draw();
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(0.0F, 0.0F, 1.0F);
+        renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, metadata));
+        tessellator.draw();
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(-1.0F, 0.0F, 0.0F);
+        renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, metadata));
+        tessellator.draw();
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(1.0F, 0.0F, 0.0F);
+        renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, metadata));
+        tessellator.draw();
+        GL11.glTranslatef(0.5F, 0.5F, 0.5F);
     }
 
     @Override
@@ -59,20 +85,17 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         IConnectedTextureBlock ctBlock = (IConnectedTextureBlock)block;
 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            if (block.shouldSideBeRendered(world, x, y, z, side.ordinal())) {
-                renderSide(world, x, y, z, side, ctBlock, renderer);
+            //world will be null when rendering inventory
+            if (world == null || block.shouldSideBeRendered(world, x, y, z, side.ordinal())) {
+                renderSide(world, x, y, z, side, ctBlock);
             }
         }
 
         return true;
     }
 
-    private void renderSide(IBlockAccess world, int x, int y, int z, ForgeDirection side, IConnectedTextureBlock block, RenderBlocks renderer)
+    private void renderSide(IBlockAccess world, int x, int y, int z, ForgeDirection side, IConnectedTextureBlock block)
     {
-        //if (side != ForgeDirection.SOUTH && side != ForgeDirection.WEST) return;
-        //if (side != ForgeDirection.EAST && side != ForgeDirection.NORTH) return;
-        if (side == ForgeDirection.UP || side == ForgeDirection.DOWN) return;
-
         Tessellator tessellator = Tessellator.instance;
 
         TextureQuadrant[] quadrants = {
@@ -81,7 +104,6 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
                 new TextureQuadrant(TextureDirection.LEFT, TextureDirection.BELOW, side),
                 new TextureQuadrant(TextureDirection.RIGHT, TextureDirection.BELOW, side),
         };
-
 
         TextureCoordinates coordinates;
         for (final TextureQuadrant quadrant : quadrants)
@@ -95,91 +117,19 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         }
     }
 
-    private static class TextureQuadrant {
-        final ForgeDirection side;
-        final ForgeDirection horizontalDirection;
-        final ForgeDirection verticalDirection;
-        final boolean offsetVerticalTexture;
-        final boolean offsetHorizontalTexture;
-
-        final Vec3 pointA;
-        final Vec3 pointB;
-        final Vec3 pointC;
-        final Vec3 pointD;
-
-        public TextureQuadrant(TextureDirection horizontal, TextureDirection vertical, ForgeDirection side)
-        {
-            this.side = side;
-            this.horizontalDirection = BlockSideRotation.forOrientation(horizontal, side);
-            this.verticalDirection = BlockSideRotation.forOrientation(vertical, side);
-
-            offsetHorizontalTexture = horizontal == TextureDirection.LEFT;
-            offsetVerticalTexture = vertical == TextureDirection.ABOVE;
-
-            float tuStart = -0.5f;
-            float tuEnd = 0.0f;
-            float tvStart = -0.5f;
-            float tvEnd = 0.0f;
-
-            if (offsetHorizontalTexture) {
-                tuStart += 0.5;
-                tuEnd += 0.5;
-            }
-            if (offsetVerticalTexture) {
-                tvStart += 0.5;
-                tvEnd += 0.5;
-            }
-
-            Vec3 pointA, pointB, pointC, pointD;
-
-            float angle = 0;
-
-            switch(side) {
-                case SOUTH:
-                    angle = 0;
-                    break;
-                case WEST:
-                    angle = (float)Math.toRadians(270);
-                    break;
-                case EAST:
-                    angle = (float)Math.toRadians(90);
-                    break;
-                case NORTH:
-                    angle = (float)Math.toRadians(180);
-                    break;
-            }
-
-            pointA = Vec3.createVectorHelper(tuStart, tvStart, -0.5);
-            pointB = Vec3.createVectorHelper(tuStart, tvEnd, -0.5);
-            pointC = Vec3.createVectorHelper(tuEnd, tvEnd, -0.5);
-            pointD = Vec3.createVectorHelper(tuEnd, tvStart, -0.5);
-
-            pointA.rotateAroundY(angle);
-            pointB.rotateAroundY(angle);
-            pointC.rotateAroundY(angle);
-            pointD.rotateAroundY(angle);
-
-
-            this.pointA = pointA.addVector(0.5, 0.5, 0.5);
-            this.pointB = pointB.addVector(0.5, 0.5, 0.5);
-            this.pointC = pointC.addVector(0.5, 0.5, 0.5);
-            this.pointD = pointD.addVector(0.5, 0.5, 0.5);
-        }
-    }
-
     private TextureCoordinates getSubTextureForBlock(IBlockAccess world, int x, int y, int z, IConnectedTextureBlock block, TextureQuadrant quadrant)
     {
         TextureCoordinates  coordinates = new TextureCoordinates();
-        int metadata = world.getBlockMetadata(x, y, z);
-        boolean horizontalConnected = block == world.getBlock(
+        int metadata = world != null ? world.getBlockMetadata(x, y, z) : 0;
+        boolean horizontalConnected = world != null && block == world.getBlock(
                 x + quadrant.horizontalDirection.offsetX,
                 y + quadrant.horizontalDirection.offsetY,
                 z + quadrant.horizontalDirection.offsetZ);
-        boolean verticalConnected = block == world.getBlock(
+        boolean verticalConnected = world != null &&block == world.getBlock(
                 x + quadrant.verticalDirection.offsetX,
                 y + quadrant.verticalDirection.offsetY,
                 z + quadrant.verticalDirection.offsetZ);
-        boolean cornerConnected = block == world.getBlock(
+        boolean cornerConnected = world != null &&block == world.getBlock(
                 x + quadrant.horizontalDirection.offsetX + quadrant.verticalDirection.offsetX,
                 y + quadrant.horizontalDirection.offsetY + quadrant.verticalDirection.offsetY,
                 z + quadrant.horizontalDirection.offsetZ + quadrant.verticalDirection.offsetZ);
@@ -243,17 +193,10 @@ public class ConnectedTextureISBRH implements ISimpleBlockRenderingHandler
         return coordinates;
     }
 
-    private static class TextureCoordinates {
-        float tuFrom;
-        float tvFrom;
-        float tuTo;
-        float tvTo;
-    }
-
     @Override
     public boolean shouldRender3DInInventory(int modelId)
     {
-        return false;
+        return true;
     }
 
     @Override
